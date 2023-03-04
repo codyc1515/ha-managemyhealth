@@ -110,7 +110,9 @@ class ManageMyHealthAppointmentsSensor(Entity):
                 for appointment in response:
                     _LOGGER.debug('AppFromTimeSlot | ' + appointment['AppFromTimeSlot'])
                     
-                    date_object = datetime.strptime(appointment['AppFromTimeSlot'] + '+13:00', "%Y-%m-%dT%H:%M:%S+13:00")
+                    date_object = datetime.strptime(appointment['AppFromTimeSlot'] + '+1300', "%Y-%m-%dT%H:%M:%S%z")
+                    #_LOGGER.debug('strptime | ' + date_object)
+                    
                     self._state = date_object.isoformat()
             else:
                 self._state = "None"
