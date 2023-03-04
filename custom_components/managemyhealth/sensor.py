@@ -114,6 +114,10 @@ class ManageMyHealthAppointmentsSensor(Entity):
                     #_LOGGER.debug('strptime | ' + date_object)
                     
                     self._state = date_object.isoformat()
+                    _LOGGER.debug('isoformat | ' + date_object.isoformat())
+                    
+                    # Because we are ordering by date in the API call, to get the soonest appointment we only ever need the first result
+                    break
             else:
                 self._state = "None"
                 _LOGGER.debug('Found no appointments on refresh')
