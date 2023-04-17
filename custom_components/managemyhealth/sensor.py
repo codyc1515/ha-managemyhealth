@@ -111,10 +111,13 @@ class ManageMyHealthAppointmentsSensor(Entity):
                     date_object = datetime.strptime(appointment['AppFromTimeSlot'] + '+0000', "%Y-%m-%dT%H:%M:%S%z")
                     self._state = date_object.isoformat()
                     
-                    date_object = datetime.strptime(appointment['AppFromTimeSlot'] + '+1300', "%Y-%m-%dT%H:%M:%S%z")
-                    #_LOGGER.debug('strptime | ' + date_object)
+                    self._state_attributes['Duration'] = str(appointment['Duration']) + " mins"
+                    self._state_attributes['Reason'] = appointment['reasontovisit']
                     
-                    self._state = date_object.isoformat()
+                    self._state_attributes['Location Name'] = appointment['BusinessName']
+                    self._state_attributes['Provider Name'] = appointment['Providername']
+                    
+                    _LOGGER.debug('AppFromTimeSlot | ' + appointment['AppFromTimeSlot'])
                     _LOGGER.debug('isoformat | ' + date_object.isoformat())
                     
                     # Because we are ordering by date in the API call, to get the soonest appointment we only ever need the first result
