@@ -100,30 +100,32 @@ class ManageMyHealthAppointmentsSensor(Entity):
         return self._unique_id
 
     def update(self):
-        _LOGGER.debug('Checking login validity')
-        if self._api.check_auth():
-            _LOGGER.debug('Fetching appointments')
-            data = []
-            response = self._api.get_appointments()
-            if response:
-                _LOGGER.debug(response)
-                for appointment in response:
-                    date_object = datetime.strptime(appointment['AppFromTimeSlot'] + '+0000', "%Y-%m-%dT%H:%M:%S%z")
-                    self._state = date_object.isoformat()
-                    
-                    self._state_attributes['Duration'] = str(appointment['Duration']) + " mins"
-                    self._state_attributes['Reason'] = appointment['reasontovisit']
-                    
-                    self._state_attributes['Location Name'] = appointment['BusinessName']
-                    self._state_attributes['Provider Name'] = appointment['Providername']
-                    
-                    _LOGGER.debug('AppFromTimeSlot | ' + appointment['AppFromTimeSlot'])
-                    _LOGGER.debug('isoformat | ' + date_object.isoformat())
-                    
-                    # Because we are ordering by date in the API call, to get the soonest appointment we only ever need the first result
+        _LOGGER.debug('Fetching appointments')
+        data = []
+        response = self._api.get_appointments()
+        if response:
+            _LOGGER.debug(response)
+            for appointment in response:
+                app_from_time_slot = appointment.get('AppFromTimeSlot')
+                if app_from_time_slot is None:
+                    self._state = None
                     break
-            else:
-                self._state = "None"
-                _LOGGER.debug('Found no appointments on refresh')
+                
+                date_object = datetime.strptime(app_from_time_slot + '+1200', "%Y-%m-%dT%H:%M:%S%z")
+                self._state = date_object.isoformat()
+                
+                self._state_attributes['Duration'] = str(appointment['Duration']) + " mins"
+                self._state_attributes['Reason'] = appointment['reasontovisit']
+                
+                self._state_attributes['Location Name'] = appointment['BusinessName']
+                self._state_attributes['Provider Name'] = appointment['Providername']
+                
+                _LOGGER.debug('AppFromTimeSlot | ' + app_from_time_slot)
+                _LOGGER.debug('isoformat | ' + date_object.isoformat())
+                
+                # Because we are ordering by date in the API call, to get the soonest appointment we only ever need the first result
+                break
+
         else:
-            _LOGGER.error('Unable to log in')
+            self._state = None
+            _LOGGER.debug('Found no appointments on refresh')
