@@ -111,7 +111,7 @@ class ManageMyHealthAppointmentsSensor(Entity):
                     self._state = None
                     break
                 
-                date_object = datetime.strptime(app_from_time_slot + '+1200', "%Y-%m-%dT%H:%M:%S%z")
+                date_object = datetime.strptime(app_from_time_slot + '+1300', "%Y-%m-%dT%H:%M:%S%z")
                 self._state = date_object.isoformat()
                 
                 self._state_attributes['Duration'] = str(appointment['Duration']) + " mins"
