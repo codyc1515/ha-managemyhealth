@@ -21,7 +21,7 @@ sensor:
 4. Restart Home Assistant
 
 ### Manually
-Copy all files in the custom_components/ha-managemyhealth folder to your Home Assistant folder *config/custom_components/managemyhealth*.
+Copy all files in the custom_components/managemyhealth folder to your Home Assistant folder *config/custom_components/managemyhealth*.
 
 ## Known issues
 None known.
