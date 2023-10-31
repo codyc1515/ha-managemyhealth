@@ -3,9 +3,9 @@
   "name": "ManageMyHealth",
   "codeowners": ["@codyc1515"],
   "dependencies": [],
-  "documentation": "https://github.com/codyc1515/hacs_managemyhealth",
+  "documentation": "https://github.com/codyc1515/ha-managemyhealth",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/codyc15/hacs_managemyhealth/issues",
+  "issue_tracker": "https://github.com/codyc15/ha-managemyhealth/issues",
   "requirements": [],
   "version": "1.0.0"
 }
