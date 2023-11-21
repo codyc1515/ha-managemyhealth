@@ -4,14 +4,7 @@
 View the date and time of your next appointment.
 
 ## Getting started
-In your configuration.yaml file, add the following:
-
-```
-sensor:
-  - platform: managemyhealth
-    email: joe@mama.com
-    password: my-secure-password
-```
+Set-up the integration from `Devices and services` area.
 
 ## Installation
 ### HACS (recommended)
