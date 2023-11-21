@@ -1,11 +1,14 @@
 {
-  "domain": "managemyhealth",
-  "name": "ManageMyHealth",
-  "codeowners": ["@codyc1515"],
-  "dependencies": [],
-  "documentation": "https://github.com/codyc1515/ha-managemyhealth",
-  "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/codyc15/ha-managemyhealth/issues",
-  "requirements": [],
-  "version": "1.0.0"
+	"domain": "managemyhealth",
+	"name": "ManageMyHealth",
+	"codeowners": [
+		"@codyc1515"
+	],
+	"config_flow": true,
+	"dependencies": [],
+	"documentation": "https://github.com/codyc1515/ha-managemyhealth",
+	"iot_class": "cloud_polling",
+	"issue_tracker": "https://github.com/codyc15/ha-managemyhealth/issues",
+	"requirements": [],
+	"version": "1.1.0"
 }

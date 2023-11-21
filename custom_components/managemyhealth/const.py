@@ -1,5 +1,7 @@
 """Constants for the ManageMyHealth sensors"""
 
-SENSOR_NAME = 'ManageMyHealth Next Appointment'
-
 DOMAIN = 'managemyhealth'
+SENSOR_NAME = "ManageMyHealth"
+
+SENSOR_NAME_APPOINTMENT = 'Next Appointment'
+SENSOR_NAME_MESSAGES_PERSONAL = 'Messages'
