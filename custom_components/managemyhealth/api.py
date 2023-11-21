@@ -1,8 +1,7 @@
-"""ManageMyHealth API"""
+import aiohttp
+import asyncio
 import logging
 from datetime import datetime, timedelta
-import requests
-from requests.auth import HTTPBasicAuth
 import json
 
 _LOGGER = logging.getLogger(__name__)
@@ -13,9 +12,9 @@ class MMHApi:
         self._password = password
         self._api_token = None
         self._user_id = None
-        self._url_base = 'https://wapiv2.managemyhealth.co.nz'
+        self._url_base = 'https://mapiv3.managemyhealth.co.nz'
 
-    def login(self):
+    async def login(self):
         """Login to the API."""
         result = False
         data = {
@@ -23,23 +22,28 @@ class MMHApi:
             "username": self._username,
             "password": self._password
         }
-        loginResult = requests.post(self._url_base + "/authaccess_token", data=data)
-        if loginResult.status_code == requests.codes.ok:
-            jsonResult = loginResult.json()
-            if jsonResult['token_type'] == "bearer":
-                self._api_token = jsonResult['access_token']
-                _LOGGER.debug('Successfully logged in')
-                result = True
-            else:
-                _LOGGER.error("Error occured logging in 2")
-        else:
-            _LOGGER.error("Error occured logging in 1")
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self._url_base + "/authaccess_token", data=data) as response:
+                if response.status == 200:
+                    content_type = response.headers.get("Content-Type", "")
+                    if "application/json" in content_type:
+                        json_result = await response.json()
+                        if json_result.get('token_type') == "bearer":
+                            _LOGGER.debug('Successfully logged in')
+                            self._api_token = json_result['access_token']
+                            result = True
+                        else:
+                            _LOGGER.error("Error occurred logging in 2")
+                    else:
+                        _LOGGER.error(f"Unexpected content type: {content_type}, Response content: {await response.text()}")
+                else:
+                    _LOGGER.error(f"Error occurred logging in 1. Response content: {await response.text()}")
         return result
 
-    def get_appointments(self):
+    async def get_appointments(self):
         if not self._api_token:
-            self.login()
-        
+            await self.login()
+
         data = {
             "requestPage": "",
             "RequestParams": [{
@@ -48,35 +52,82 @@ class MMHApi:
             }]
         }
         headers = {
-            "Accept: application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer " + self._api_token
         }
-        response = requests.post(self._url_base + "/api/Appointments/GetPatientAppointments", json=data, headers=headers)
-        data = {}
-        if response.status_code == requests.codes.ok:
-            data = response.json()
-            if not data:
-                _LOGGER.debug('Fetched appointments successfully, but did not find any')
-            return data
-        else:
-            _LOGGER.error('Failed to fetch appointments')
-            return data
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self._url_base + "/api/Appointments/GetPatientAppointments", json=data, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if not data:
+                        _LOGGER.debug('Fetched appointments successfully, but did not find any; looking for past appointments')
+                        return await self.get_past_appointments()
+                    else:
+                        return data
+                else:
+                    _LOGGER.error('Failed to fetch appointments')
+                    return {}
 
-    def get_personal_messages(self):
+    async def get_past_appointments(self):
         if not self._api_token:
-            self.login()
-        
+            await self.login()
+
+        data = {
+            "requestPage": "",
+            "RequestParams": [{
+                "key": "UserId",
+                "value": ""
+            }, {
+                "key": "strindx",
+                "value": 0
+            }, {
+                "key": "EndIndx",
+                "value": 20
+            }]
+        }
         headers = {
-            "Accept: application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer " + self._api_token
         }
-        response = requests.post(self._url_base + "/api/Inbox/GetReceivedMessages", headers=headers)
-        data = {}
-        if response.status_code == requests.codes.ok:
-            data = response.json()
-            if not data:
-                _LOGGER.debug('Fetched personal messages successfully, but did not find any')
-            return data
-        else:
-            _LOGGER.error('Failed to fetch personal messages')
-            return data
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self._url_base + "/api/Appointments/GetPastAppointmentsPaging", json=data, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if not data:
+                        _LOGGER.debug('Fetched past appointments successfully, but did not find any')
+                    return data
+                else:
+                    _LOGGER.error('Failed to fetch past appointments')
+                    return {}
+
+    async def get_mailbox(self):
+        if not self._api_token:
+            await self.login()
+
+        data = {
+            "requestPage": "",
+            "RequestParams": [{
+                "key": "UserId",
+                "value": ""
+            }, {
+                "key": "startIndx",
+                "value": 0
+            }, {
+                "key": "EndIndx",
+                "value": 20
+            }]
+        }
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer " + self._api_token
+        }
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self._url_base + "/api/Inbox/GetReceivedMessages", json=data, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if not data:
+                        _LOGGER.debug('Fetched personal messages successfully, but did not find any')
+                    return data
+                else:
+                    _LOGGER.error('Failed to fetch personal messages')
+                    return {}

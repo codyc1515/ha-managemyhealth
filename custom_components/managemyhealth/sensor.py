@@ -15,10 +15,10 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from .api import MMHApi
 
-from .const import DOMAIN, SENSOR_NAME_APPOINTMENT, SENSOR_NAME_MESSAGES_PERSONAL
+from .const import DOMAIN, SENSOR_NAME_APPOINTMENT, SENSOR_NAME_MAILBOX
 
 NAME = DOMAIN
-ISSUEURL = "https://github.com/codyc1515/hacs_managemyhealth/issues"
+ISSUEURL = "https://github.com/codyc1515/ha-managemyhealth/issues"
 
 STARTUP = f"""
 -------------------------------------------------------------------
@@ -52,19 +52,19 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up sensor(s)...")
 
     sensors = []
-    sensors.append(MMHAppointmentsSensor(SENSOR_NAME_APPOINTMENT, api))
-    #sensors.append(MMHPersonalMessagesSensor(SENSOR_NAME_MESSAGES_PERSONAL, api))
+    sensors.append(MMHAppointmentSensor(SENSOR_NAME_APPOINTMENT, api))
+    sensors.append(MMHMailboxSensor(SENSOR_NAME_MAILBOX, api))
     async_add_entities(sensors, True)
 
 
-class MMHAppointmentsSensor(Entity):
+class MMHAppointmentSensor(Entity):
     def __init__(self, name, api):
         self._name = name
         self._icon = "mdi:doctor"
-        self._state = ""
+        self._state = None
         self._state_attributes = {}
         self._unit_of_measurement = None
-        self._unique_id = f"{DOMAIN}_appointments"
+        self._unique_id = "mmh_appointment"
         self._device_class = "timestamp"
         self._api = api
 
@@ -103,10 +103,10 @@ class MMHAppointmentsSensor(Entity):
         """Return the unique id."""
         return self._unique_id
 
-    def update(self):
+    async def async_update(self):
         _LOGGER.debug("Fetching appointments")
         data = []
-        response = self._api.get_appointments()
+        response = await self._api.get_appointments()
         if response:
             _LOGGER.debug(response)
             for appointment in response:
@@ -119,35 +119,31 @@ class MMHAppointmentsSensor(Entity):
                     app_from_time_slot + "+1300", "%Y-%m-%dT%H:%M:%S%z"
                 )
                 self._state = date_object.isoformat()
+                
+                # Past appointments don't have much of this information
+                if "Duration" in appointment:
+                    self._state_attributes["Duration"] = (
+                        str(appointment["Duration"]) + " mins"
+                    )
+                    self._state_attributes["Reason"] = appointment["reasontovisit"]
 
-                self._state_attributes["Duration"] = (
-                    str(appointment["Duration"]) + " mins"
-                )
-                self._state_attributes["Reason"] = appointment["reasontovisit"]
-
-                self._state_attributes["Location Name"] = appointment["BusinessName"]
-                self._state_attributes["Provider Name"] = appointment["Providername"]
-
-                _LOGGER.debug("AppFromTimeSlot | " + app_from_time_slot)
-                _LOGGER.debug("isoformat | " + date_object.isoformat())
+                    self._state_attributes["Location Name"] = appointment["BusinessName"]
+                    self._state_attributes["Provider Name"] = appointment["Providername"]
 
                 # Because we are ordering by date in the API call, to get the soonest appointment we only ever need the first result
                 break
-
         else:
             self._state = None
             _LOGGER.debug("Found no appointments on refresh")
 
 
-class MMHPersonalMessagesSensor(Entity):
+class MMHMailboxSensor(Entity):
     def __init__(self, name, api):
         self._name = name
         self._icon = "mdi:doctor"
-        self._state = ""
+        self._state = None
         self._state_attributes = {}
-        self._unit_of_measurement = None
-        self._unique_id = f"{DOMAIN}_messages"
-        self._device_class = "timestamp"
+        self._unique_id = "mmh_mailbox"
         self._api = api
 
     @property
@@ -171,38 +167,28 @@ class MMHPersonalMessagesSensor(Entity):
         return self._state_attributes
 
     @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return self._unit_of_measurement
-
-    @property
-    def device_class(self):
-        """Return the device class."""
-        return self._device_class
-
-    @property
     def unique_id(self):
         """Return the unique id."""
         return self._unique_id
 
-    def update(self):
+    async def async_update(self):
         _LOGGER.debug("Fetching personal messages")
         data = []
-        response = self._api.get_personal_messages()
+        response = await self._api.get_mailbox()
         if response:
             _LOGGER.debug(response)
             for message in response:
-                self._state = message.Subject
+                self._state = message['Subject'].replace('Re : ', '')
 
+                self._state_attributes['Message'] = message['MessageBody']
+                self._state_attributes['From'] = message['FromName']
+                
                 date_object = datetime.strptime(
-                    message["InsertTimeStamp"] + "+1300", "%Y-%m-%dT%H:%M:%S%z"
+                    message['MessageReceivedOn'] + "+1300", "%Y-%m-%dT%H:%M:%S.%f%z"
                 )
-                self._state = date_object.isoformat()
+                self._state_attributes['Date'] = date_object.isoformat()
 
-                self._state_attributes["Message"] = message["MessageBody"]
-                self._state_attributes["From"] = appointment["FromName"]
-
-                # Because we are ordering by date in the API call, to get the soonest appointment we only ever need the first result
+                # Because we are ordering by date in the API call, to get the soonest message we only ever need the first result
                 break
         else:
             self._state = None
