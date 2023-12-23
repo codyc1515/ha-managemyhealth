@@ -110,6 +110,9 @@ class MMHAppointmentSensor(Entity):
         if response:
             _LOGGER.debug(response)
             for appointment in response:
+                if appointment['appstatus'] == 'Cancelled' or appointment['IsApproved'] == 'Rejected':
+                    continue
+                
                 app_from_time_slot = appointment.get("AppFromTimeSlot")
                 if app_from_time_slot is None:
                     self._state = None
