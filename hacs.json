@@ -1,5 +1,10 @@
 {
-	"name": "ManageMyHealth Appointments",
+	"name": "ManageMyHealth",
+	"country": [
+		"NZ"
+	],
+	"filename": "managemyhealth.zip",
+	"hide_default_branch": true,
 	"render_readme": true,
-  	"country": ["NZ"]
+	"zip_release": true
 }

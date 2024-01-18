@@ -1,12 +1,9 @@
-"""Constants for the ManageMyHealth sensors"""
-from homeassistant.const import Platform
+"""Constants for ManageMyHealth."""
+from logging import Logger, getLogger
 
-DOMAIN = 'managemyhealth'
-SENSOR_NAME = "ManageMyHealth"
+LOGGER: Logger = getLogger(__package__)
 
-SENSOR_NAME_APPOINTMENT = 'Appointment'
-SENSOR_NAME_MAILBOX = 'Message'
-
-PLATFORMS = [
-    Platform.SENSOR,
-]
+NAME = "ManageMyHealth"
+DOMAIN = "managemyhealth"
+VERSION = "2.0.0"
+ATTRIBUTION = "Data provided by ManageMyHealth"
