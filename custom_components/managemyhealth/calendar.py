@@ -1,12 +1,18 @@
 """Calendar platform for ManageMyHealth."""
 from __future__ import annotations
+
 import logging
+import datetime
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
+from homeassistant.components.sensor import SensorEntityDescription
+from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .coordinator import MmhDataUpdateCoordinator
 from .entity import MmhEntity
+
+import homeassistant.util.dt as dt_util
 
 ENTITY_DESCRIPTIONS = (
     SensorEntityDescription(
@@ -60,7 +66,7 @@ class MmhCalendar(MmhEntity, CalendarEntity):
                 location="Future Location",
             )
         else:
-            return None 
+            return None
         return self._event
 
     async def async_get_events(
