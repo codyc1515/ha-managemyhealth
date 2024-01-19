@@ -88,7 +88,7 @@ class MmhApi:
 
         if appointments:
             _LOGGER.debug('Fetched current appointments')
-            
+
             # Loop through the appointment(s)
             for appointment in appointments:
                 # Skip cancelled or rejected
@@ -162,7 +162,7 @@ class MmhApi:
 
         if appointments:
             _LOGGER.debug('Fetched past appointments')
-            
+
             # Loop through the appointment(s)
             for appointment in appointments:
                 # If there was no appointment time, skip it
@@ -171,7 +171,7 @@ class MmhApi:
                     break
 
                 _LOGGER.debug('Found past appointment')
-                
+
                 # Get the appointment time
                 start = datetime.strptime(appointment.get("AppFromTimeSlot") + "+1300", "%Y-%m-%dT%H:%M:%S%z")
 
