@@ -5,8 +5,8 @@ import logging
 import datetime
 
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
-from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityDescription
 
 from .const import DOMAIN
 from .coordinator import MmhDataUpdateCoordinator
@@ -15,7 +15,7 @@ from .entity import MmhEntity
 import homeassistant.util.dt as dt_util
 
 ENTITY_DESCRIPTIONS = (
-    SensorEntityDescription(
+    EntityDescription(
         key="calendar",
         name="Health Appointments",
         icon="mdi:doctor",
@@ -43,7 +43,7 @@ class MmhCalendar(MmhEntity, CalendarEntity):
     def __init__(
         self,
         coordinator: MmhDataUpdateCoordinator,
-        entity_description: SensorEntityDescription,
+        entity_description: EntityDescription,
     ) -> None:
         """Initialize the calendar class."""
         super().__init__(coordinator)
