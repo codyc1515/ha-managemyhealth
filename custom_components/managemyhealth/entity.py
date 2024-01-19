@@ -5,7 +5,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTRIBUTION, DOMAIN, NAME, VERSION
+from .const import ATTRIBUTION, DOMAIN, NAME
 from .coordinator import MmhDataUpdateCoordinator
 
 
@@ -23,7 +23,6 @@ class MmhEntity(CoordinatorEntity):
             configuration_url="https://app.managemyhealth.co.nz/dashboards/dashboard",
             entry_type=DeviceEntryType.SERVICE,
             manufacturer=NAME,
-            model=VERSION,
             name=NAME,
             suggested_area="Health"
         )

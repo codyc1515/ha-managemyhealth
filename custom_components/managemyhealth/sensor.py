@@ -10,7 +10,7 @@ from .entity import MmhEntity
 
 ENTITY_DESCRIPTIONS = (
     SensorEntityDescription(
-        key="appointment",
+        key="sensor",
         name="Health Appointment",
         icon="mdi:doctor",
     ),
@@ -46,9 +46,9 @@ class MmhSensor(MmhEntity, SensorEntity):
     @property
     def native_value(self) -> str:
         """Return the native value of the sensor."""
-        _LOGGER.debug(self.coordinator)
-        _LOGGER.debug(self.coordinator.data)
         if self.coordinator.data['appointment']:
-            return self.coordinator.data['appointment']['date']
+            _LOGGER.debug("Found sensor data")
+            return self.coordinator.data['appointment']['start']
         else:
+            _LOGGER.debug("Couldn't find sensor data")
             return None

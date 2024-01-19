@@ -16,7 +16,7 @@ from .entity import MmhEntity
 ENTITY_DESCRIPTIONS = (
     EntityDescription(
         key="calendar",
-        name="Health Appointments",
+        name="Health Appointment",
         icon="mdi:doctor",
     ),
 )
@@ -52,17 +52,18 @@ class MmhCalendar(MmhEntity, CalendarEntity):
     @property
     def event(self) -> CalendarEvent:
         """Return the next upcoming event."""
-        _LOGGER.debug(self.coordinator.data)
-        if self.coordinator.data['appointment']:
+        if self.coordinator.data and self.coordinator.data['appointment']:
+            _LOGGER.debug('Found event')
             self._event = CalendarEvent(
                 start=self.coordinator.data['appointment']['start'],
                 end=self.coordinator.data['appointment']['end'],
                 summary=self.coordinator.data['appointment']['summary'],
                 description=self.coordinator.data['appointment']['description'],
-                location=self.coordinator.data['appointment']['location'], # doesn't work?
+                location=self.coordinator.data['appointment']['location'],
             )
         else:
-            return None
+            _LOGGER.debug('No events found')
+            self._event = None
         return self._event
 
     async def async_get_events(

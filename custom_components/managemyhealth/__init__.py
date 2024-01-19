@@ -11,9 +11,9 @@ from .const import DOMAIN
 from .coordinator import MmhDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
-    Platform.SENSOR,
     Platform.CALENDAR,
 #    Platform.BINARY_SENSOR,
+#    Platform.SENSOR,
 #    Platform.SWITCH,
 ]
 

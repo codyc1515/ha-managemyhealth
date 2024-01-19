@@ -1,5 +1,6 @@
 """ManageMyHealth API."""
 from __future__ import annotations
+import logging
 
 import asyncio
 import socket
@@ -7,7 +8,9 @@ import socket
 import aiohttp
 import async_timeout
 
-from datetime import datetime
+from datetime import datetime, timedelta
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class MmhApiError(Exception):
@@ -63,12 +66,13 @@ class MmhApi:
             )
             return False
 
-    async def async_get_appointments(self) -> any:
+    async def get_appointments(self) -> any:
         """Get data from the API."""
         if not self._token:
             await self.login()
 
         # Get appointments
+        _LOGGER.debug('Fetching current appointments')
         appointments = await self._api_wrapper(
             method="post",
             url=self._server + "/api/Appointments/GetPatientAppointments",
@@ -83,17 +87,25 @@ class MmhApi:
         )
 
         if appointments:
+            _LOGGER.debug('Fetched current appointments')
+            
             # Loop through the appointment(s)
             for appointment in appointments:
                 # Skip cancelled or rejected
-                #if appointment['appstatus'] == 'Cancelled' or appointment['IsApproved'] == 'Rejected':
-                #    continue
+                if appointment['appstatus'] == 'Cancelled' or appointment['IsApproved'] == 'Rejected':
+                    continue
+
+                # If there was no appointment time, skip it
+                if appointment.get("AppFromTimeSlot") is None:
+                    continue
+
+                _LOGGER.debug('Found future appointment')
 
                 # Get the appointment time
                 start = datetime.strptime(appointment.get("AppFromTimeSlot") + "+1300", "%Y-%m-%dT%H:%M:%S%z")
 
                 # Calculate the end time from the duration
-                end = datetime.timedelta(minutes=appointment.get("Duration"))
+                end = start + timedelta(minutes=appointment.get("Duration"))
 
                 # Find the providers name
                 summary = appointment.get("Providername")
@@ -115,9 +127,83 @@ class MmhApi:
                         "raw": appointment
                     }
                 }
+
+            _LOGGER.debug('Found no future appointments, looking for past appointments')
+            return await self.get_appointments_past()
+        else:
+            _LOGGER.debug('Found no future appointments, looking for past appointments')
+            return await self.get_appointments_past()
+
+    async def get_appointments_past(self) -> any:
+        """Get data from the API."""
+        if not self._token:
+            await self.login()
+
+        # Get appointments
+        _LOGGER.debug('Fetching past appointments')
+        appointments = await self._api_wrapper(
+            method="post",
+            url=self._server + "/api/Appointments/GetPastAppointmentsPaging",
+            json={
+                "requestPage": "",
+                "RequestParams": [{
+                    "key": "UserId",
+                    "value": ""
+                }, {
+                    "key": "strindx",
+                    "value": 0
+                }, {
+                    "key": "EndIndx",
+                    "value": 20
+                }]
+            },
+            headers={"Authorization": "Bearer " + self._token},
+        )
+
+        if appointments:
+            _LOGGER.debug('Fetched past appointments')
+            
+            # Loop through the appointment(s)
+            for appointment in appointments:
+                # If there was no appointment time, skip it
+                if appointment.get("AppFromTimeSlot") is None:
+                    return False
+                    break
+
+                _LOGGER.debug('Found past appointment')
+                
+                # Get the appointment time
+                start = datetime.strptime(appointment.get("AppFromTimeSlot") + "+1300", "%Y-%m-%dT%H:%M:%S%z")
+
+                # Calculate the end time from the duration (past appointments don't have a Duration, so guess it was 15)
+                end = start + timedelta(minutes=15)
+
+                # Find the providers name
+                summary = appointment.get("Providername")
+
+                # Find the reason to visit
+                description = appointment.get("reasontovisit")
+
+                # Find the location
+                location = appointment.get("BusinessName")
+
+                # Because we are ordering by date in the API call, to get the soonest appointment we only ever need the first result
+                return {
+                    "appointment": {
+                        "start": start,
+                        "end": end,
+                        "summary": summary,
+                        "description": description,
+                        "location": location,
+                        "raw": appointment
+                    }
+                }
+
+            _LOGGER.warning('Could not find any appointments')
+            return False
         else:
             raise MmhApiError(
-                "Something really wrong happened but was this part required?",
+                "Something really wrong happened",
             )
             return False
 

@@ -42,7 +42,7 @@ class MmhDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         """Update data via library."""
         try:
-            return await self.api.async_get_appointments()
+            return await self.api.get_appointments()
         except MmhApiAuthenticationError as exception:
             raise ConfigEntryAuthFailed(exception) from exception
         except MmhApiError as exception:
