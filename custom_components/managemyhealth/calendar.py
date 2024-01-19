@@ -12,7 +12,6 @@ from .const import DOMAIN
 from .coordinator import MmhDataUpdateCoordinator
 from .entity import MmhEntity
 
-import homeassistant.util.dt as dt_util
 
 ENTITY_DESCRIPTIONS = (
     EntityDescription(
@@ -53,17 +52,14 @@ class MmhCalendar(MmhEntity, CalendarEntity):
     @property
     def event(self) -> CalendarEvent:
         """Return the next upcoming event."""
-        _LOGGER.debug(self.coordinator)
         _LOGGER.debug(self.coordinator.data)
         if self.coordinator.data['appointment']:
-            # self.coordinator.data['appointment']['date']
-            half_hour_from_now = dt_util.now() + datetime.timedelta(minutes=0)
             self._event = CalendarEvent(
-                start=half_hour_from_now,
-                end=half_hour_from_now + datetime.timedelta(minutes=15),
-                summary="Future Event",
-                description="Future Description",
-                location="Future Location",
+                start=self.coordinator.data['appointment']['start'],
+                end=self.coordinator.data['appointment']['end'],
+                summary=self.coordinator.data['appointment']['summary'],
+                description=self.coordinator.data['appointment']['description'],
+                location=self.coordinator.data['appointment']['location'], # doesn't work?
             )
         else:
             return None
@@ -76,9 +72,11 @@ class MmhCalendar(MmhEntity, CalendarEntity):
         end_date: datetime.datetime,
     ) -> list[CalendarEvent]:
         """Return calendar events within a datetime range."""
+        ''' # not sure this is required
         assert start_date < end_date
         if self._event.start_datetime_local >= end_date:
             return []
         if self._event.end_datetime_local < start_date:
             return []
+        '''
         return [self._event]

@@ -89,23 +89,29 @@ class MmhApi:
                 #if appointment['appstatus'] == 'Cancelled' or appointment['IsApproved'] == 'Rejected':
                 #    continue
 
-                # Get the time
-                app_from_time_slot = appointment.get("AppFromTimeSlot")
+                # Get the appointment time
+                start = datetime.strptime(appointment.get("AppFromTimeSlot") + "+1300", "%Y-%m-%dT%H:%M:%S%z")
 
-                # If no time slot, skip it
-                if app_from_time_slot is None:
-                    self._state = None
-                    break
+                # Calculate the end time from the duration
+                end = datetime.timedelta(minutes=appointment.get("Duration"))
 
-                # Format the time
-                date_object = datetime.strptime(
-                    app_from_time_slot + "+1300", "%Y-%m-%dT%H:%M:%S%z"
-                )
+                # Find the providers name
+                summary = appointment.get("Providername")
+
+                # Find the reason to visit
+                description = appointment.get("reasontovisit")
+
+                # Find the location
+                location = appointment.get("BusinessName")
 
                 # Because we are ordering by date in the API call, to get the soonest appointment we only ever need the first result
                 return {
                     "appointment": {
-                        "date": date_object.isoformat(),
+                        "start": start,
+                        "end": end,
+                        "summary": summary,
+                        "description": description,
+                        "location": location,
                         "raw": appointment
                     }
                 }
