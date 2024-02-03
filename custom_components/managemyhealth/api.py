@@ -227,7 +227,7 @@ class MmhApi:
                     json=json,
                     headers=headers,
                 )
-                if response.status in (401, 403):
+                if response.status in (400, 401, 403):
                     raise MmhApiAuthenticationError(
                         "Invalid credentials",
                     )
