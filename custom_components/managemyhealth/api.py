@@ -228,12 +228,12 @@ class MmhApi:
                     headers=headers,
                 )
                 if response.status in (400, 401, 403):
-                    raise MmhApiAuthenticationError(
-                        "Invalid credentials",
-                    )
+                    raise MmhApiAuthenticationError()
                 response.raise_for_status()
                 return await response.json()
 
+        except MmhApiAuthenticationError as exception:
+            raise MmhApiAuthenticationError("Invalid credentials") from exception
         except asyncio.TimeoutError as exception:
             raise MmhApiCommunicationError(
                 "Timeout error fetching information: %s", exception
@@ -246,3 +246,16 @@ class MmhApi:
             raise MmhApiError(
                 "Something really wrong happened!: %s", exception
             ) from exception
+
+    async def disconnect(self) -> None:
+        """Disconnect from the client."""
+        _LOGGER.debug("Invoked close manually")
+        await self.__aexit__()
+
+    async def __aexit__(self, *excinfo):
+        """Destroy the device and http sessions."""
+        _LOGGER.debug("Invoked close automatically")
+        if not self._session:
+            return
+
+        await self._session.close()

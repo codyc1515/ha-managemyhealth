@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
@@ -39,6 +40,13 @@ class MmhDataUpdateCoordinator(DataUpdateCoordinator):
             name=DOMAIN,
             update_interval=timedelta(minutes=30),
         )
+
+        async def disconnect() -> None:
+            """Close ClientSession."""
+            await self.api.disconnect()
+
+        # Disconnect the ClientSession on stop
+        self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, disconnect)
 
     async def _async_update_data(self):
         """Update data via library."""
