@@ -1,4 +1,5 @@
 """Calendar platform for ManageMyHealth."""
+
 from __future__ import annotations
 
 import logging
@@ -52,17 +53,17 @@ class MmhCalendar(MmhEntity, CalendarEntity):
     @property
     def event(self) -> CalendarEvent:
         """Return the next upcoming event."""
-        if self.coordinator.data and self.coordinator.data['appointment']:
-            _LOGGER.debug('Found event')
+        if self.coordinator.data and self.coordinator.data["appointment"]:
+            _LOGGER.debug("Found event")
             self._event = CalendarEvent(
-                start=self.coordinator.data['appointment']['start'],
-                end=self.coordinator.data['appointment']['end'],
-                summary=self.coordinator.data['appointment']['summary'],
-                description=self.coordinator.data['appointment']['description'],
-                location=self.coordinator.data['appointment']['location'],
+                start=self.coordinator.data["appointment"]["start"],
+                end=self.coordinator.data["appointment"]["end"],
+                summary=self.coordinator.data["appointment"]["summary"],
+                description=self.coordinator.data["appointment"]["description"],
+                location=self.coordinator.data["appointment"]["location"],
             )
         else:
-            _LOGGER.debug('No events found')
+            _LOGGER.debug("No events found")
             self._event = None
         return self._event
 
@@ -73,11 +74,11 @@ class MmhCalendar(MmhEntity, CalendarEntity):
         end_date: datetime.datetime,
     ) -> list[CalendarEvent]:
         """Return calendar events within a datetime range."""
-        ''' # not sure this is required
+        """ # not sure this is required
         assert start_date < end_date
         if self._event.start_datetime_local >= end_date:
             return []
         if self._event.end_datetime_local < start_date:
             return []
-        '''
+        """
         return [self._event]

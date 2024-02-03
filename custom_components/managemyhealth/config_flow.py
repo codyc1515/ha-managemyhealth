@@ -1,4 +1,5 @@
 """Adds config flow for ManageMyHealth."""
+
 from __future__ import annotations
 
 import voluptuous as vol
@@ -61,14 +62,13 @@ class MmhFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                         default=(user_input or {}).get(CONF_EMAIL),
                     ): selector.TextSelector(
                         selector.TextSelectorConfig(
-                            type=selector.TextSelectorType.EMAIL,
-                            autocomplete="email"
+                            type=selector.TextSelectorType.EMAIL, autocomplete="email"
                         ),
                     ),
                     vol.Required(CONF_PASSWORD): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.PASSWORD,
-                            autocomplete="password"
+                            autocomplete="password",
                         ),
                     ),
                 }

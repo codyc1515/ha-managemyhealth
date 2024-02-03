@@ -1,4 +1,5 @@
 """ManageMyHealth Entity class."""
+
 from __future__ import annotations
 
 from homeassistant.helpers.device_registry import DeviceEntryType
@@ -24,5 +25,5 @@ class MmhEntity(CoordinatorEntity):
             entry_type=DeviceEntryType.SERVICE,
             manufacturer=NAME,
             name=NAME,
-            suggested_area="Health"
+            suggested_area="Health",
         )

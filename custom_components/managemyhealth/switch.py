@@ -1,4 +1,5 @@
 """Switch platform for ManageMyHealth."""
+
 from __future__ import annotations
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription

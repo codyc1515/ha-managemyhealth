@@ -1,4 +1,5 @@
 """Sensor platform for ManageMyHealth."""
+
 from __future__ import annotations
 import logging
 
@@ -46,9 +47,9 @@ class MmhSensor(MmhEntity, SensorEntity):
     @property
     def native_value(self) -> str:
         """Return the native value of the sensor."""
-        if self.coordinator.data['appointment']:
+        if self.coordinator.data["appointment"]:
             _LOGGER.debug("Found sensor data")
-            return self.coordinator.data['appointment']['start']
+            return self.coordinator.data["appointment"]["start"]
         else:
             _LOGGER.debug("Couldn't find sensor data")
             return None

@@ -1,4 +1,5 @@
 """ManageMyHealth API."""
+
 from __future__ import annotations
 import logging
 
@@ -17,15 +18,11 @@ class MmhApiError(Exception):
     """Exception to indicate a general API error."""
 
 
-class MmhApiCommunicationError(
-    MmhApiError
-):
+class MmhApiCommunicationError(MmhApiError):
     """Exception to indicate a communication error."""
 
 
-class MmhApiAuthenticationError(
-    MmhApiError
-):
+class MmhApiAuthenticationError(MmhApiError):
     """Exception to indicate an authentication error."""
 
 
@@ -43,7 +40,7 @@ class MmhApi:
         self._password = password
         self._session = session
         self._token = None
-        self._server = 'https://mapiv3.managemyhealth.co.nz'
+        self._server = "https://mapiv3.managemyhealth.co.nz"
 
     async def login(self) -> any:
         """Login to the API."""
@@ -53,12 +50,12 @@ class MmhApi:
             data={
                 "grant_type": "password",
                 "username": self._email,
-                "password": self._password
-            }
+                "password": self._password,
+            },
         )
 
-        if response.get('token_type') == "bearer":
-            self._token = response.get('access_token')
+        if response.get("token_type") == "bearer":
+            self._token = response.get("access_token")
             return True
         else:
             raise MmhApiAuthenticationError(
@@ -72,37 +69,36 @@ class MmhApi:
             await self.login()
 
         # Get appointments
-        _LOGGER.debug('Fetching current appointments')
+        _LOGGER.debug("Fetching current appointments")
         appointments = await self._api_wrapper(
             method="post",
             url=self._server + "/api/Appointments/GetPatientAppointments",
-            json={
-                "requestPage": "",
-                "RequestParams": [{
-                    "key": "userid",
-                    "value": ""
-                }]
-            },
+            json={"requestPage": "", "RequestParams": [{"key": "userid", "value": ""}]},
             headers={"Authorization": "Bearer " + self._token},
         )
 
         if appointments:
-            _LOGGER.debug('Fetched current appointments')
+            _LOGGER.debug("Fetched current appointments")
 
             # Loop through the appointment(s)
             for appointment in appointments:
                 # Skip cancelled or rejected
-                if appointment['appstatus'] == 'Cancelled' or appointment['IsApproved'] == 'Rejected':
+                if (
+                    appointment["appstatus"] == "Cancelled"
+                    or appointment["IsApproved"] == "Rejected"
+                ):
                     continue
 
                 # If there was no appointment time, skip it
                 if appointment.get("AppFromTimeSlot") is None:
                     continue
 
-                _LOGGER.debug('Found future appointment')
+                _LOGGER.debug("Found future appointment")
 
                 # Get the appointment time
-                start = datetime.strptime(appointment.get("AppFromTimeSlot") + "+1300", "%Y-%m-%dT%H:%M:%S%z")
+                start = datetime.strptime(
+                    appointment.get("AppFromTimeSlot") + "+1300", "%Y-%m-%dT%H:%M:%S%z"
+                )
 
                 # Calculate the end time from the duration
                 end = start + timedelta(minutes=appointment.get("Duration"))
@@ -124,14 +120,14 @@ class MmhApi:
                         "summary": summary,
                         "description": description,
                         "location": location,
-                        "raw": appointment
+                        "raw": appointment,
                     }
                 }
 
-            _LOGGER.debug('Found no future appointments, looking for past appointments')
+            _LOGGER.debug("Found no future appointments, looking for past appointments")
             return await self.get_appointments_past()
         else:
-            _LOGGER.debug('Found no future appointments, looking for past appointments')
+            _LOGGER.debug("Found no future appointments, looking for past appointments")
             return await self.get_appointments_past()
 
     async def get_appointments_past(self) -> any:
@@ -140,28 +136,23 @@ class MmhApi:
             await self.login()
 
         # Get appointments
-        _LOGGER.debug('Fetching past appointments')
+        _LOGGER.debug("Fetching past appointments")
         appointments = await self._api_wrapper(
             method="post",
             url=self._server + "/api/Appointments/GetPastAppointmentsPaging",
             json={
                 "requestPage": "",
-                "RequestParams": [{
-                    "key": "UserId",
-                    "value": ""
-                }, {
-                    "key": "strindx",
-                    "value": 0
-                }, {
-                    "key": "EndIndx",
-                    "value": 20
-                }]
+                "RequestParams": [
+                    {"key": "UserId", "value": ""},
+                    {"key": "strindx", "value": 0},
+                    {"key": "EndIndx", "value": 20},
+                ],
             },
             headers={"Authorization": "Bearer " + self._token},
         )
 
         if appointments:
-            _LOGGER.debug('Fetched past appointments')
+            _LOGGER.debug("Fetched past appointments")
 
             # Loop through the appointment(s)
             for appointment in appointments:
@@ -170,10 +161,12 @@ class MmhApi:
                     return False
                     break
 
-                _LOGGER.debug('Found past appointment')
+                _LOGGER.debug("Found past appointment")
 
                 # Get the appointment time
-                start = datetime.strptime(appointment.get("AppFromTimeSlot") + "+1300", "%Y-%m-%dT%H:%M:%S%z")
+                start = datetime.strptime(
+                    appointment.get("AppFromTimeSlot") + "+1300", "%Y-%m-%dT%H:%M:%S%z"
+                )
 
                 # Calculate the end time from the duration (past appointments don't have a Duration, so guess it was 15)
                 end = start + timedelta(minutes=15)
@@ -195,11 +188,11 @@ class MmhApi:
                         "summary": summary,
                         "description": description,
                         "location": location,
-                        "raw": appointment
+                        "raw": appointment,
                     }
                 }
 
-            _LOGGER.warning('Could not find any appointments')
+            _LOGGER.warning("Could not find any appointments")
             return False
         else:
             raise MmhApiError(

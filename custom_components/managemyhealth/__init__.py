@@ -1,4 +1,5 @@
 """Custom integration to integrate ManageMyHealth with Home Assistant."""
+
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
@@ -12,9 +13,9 @@ from .coordinator import MmhDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
     Platform.CALENDAR,
-#    Platform.BINARY_SENSOR,
-#    Platform.SENSOR,
-#    Platform.SWITCH,
+    #    Platform.BINARY_SENSOR,
+    #    Platform.SENSOR,
+    #    Platform.SWITCH,
 ]
 
 
