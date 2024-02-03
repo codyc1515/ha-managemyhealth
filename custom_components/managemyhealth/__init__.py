@@ -13,9 +13,6 @@ from .coordinator import MmhDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
     Platform.CALENDAR,
-    #    Platform.BINARY_SENSOR,
-    #    Platform.SENSOR,
-    #    Platform.SWITCH,
 ]
 
 
